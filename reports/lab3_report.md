@@ -39,111 +39,11 @@ public class Lexer {
         while (pos < input.length()) {
             char currentChar = input.charAt(pos);
             if (Character.isDigit(currentChar)) {
-                int initialPos = pos;
-                while (pos < input.length() && Character.isDigit(input.charAt(pos))) {
-                    pos++;
-                }
-                tokens.add(new Token(TokenType.INTEGER, input.substring(initialPos, pos)));
+                // tokenize integers
             } else if (Character.isLetter(currentChar)) {
-                int startPos = pos;
-                while (pos < input.length() && (Character.isLetterOrDigit(input.charAt(pos)) || input.charAt(pos) == '_')) {
-                    pos++;
-                }
-                String identifier = input.substring(startPos, pos);
-                switch (identifier) {
-                    case "if" -> tokens.add(new Token(TokenType.IF, "if"));
-                    case "else" -> tokens.add(new Token(TokenType.ELSE, "else"));
-                    case "while" -> tokens.add(new Token(TokenType.WHILE, "while"));
-                    case "do" -> tokens.add(new Token(TokenType.DO, "do"));
-                    case "int" -> tokens.add(new Token(TokenType.INT, "int"));
-                    case "for" -> tokens.add(new Token(TokenType.FOR, "int"));
-                    default -> tokens.add(new Token(TokenType.IDENTIFIER, identifier));
-                }
-            } else if (currentChar == '+') {
-                tokens.add(new Token(TokenType.PLUS, "+"));
-                pos++;
-            } else if (currentChar == '-') {
-                tokens.add(new Token(TokenType.MINUS, "-"));
-                pos++;
-            } else if (currentChar == '*') {
-                tokens.add(new Token(TokenType.MULTIPLY, "*"));
-                pos++;
-            } else if (currentChar == '/') {
-                tokens.add(new Token(TokenType.DIVIDE, "/"));
-                pos++;
-            } else if (currentChar == '(') {
-                tokens.add(new Token(TokenType.LEFT_PAREN, "("));
-                pos++;
-            } else if (currentChar == ')') {
-                tokens.add(new Token(TokenType.RIGHT_PAREN, ")"));
-                pos++;
-            } else if (currentChar == '=') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '=') {
-                    tokens.add(new Token(TokenType.EQUALS, "=="));
-                    pos += 2;
-                } else {
-                    tokens.add(new Token(TokenType.ASSIGNMENT, "="));
-                    pos++;
-                }
-            } else if (currentChar == '>') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '=') {
-                    tokens.add(new Token(TokenType.GREATER_THAN_OR_EQUAL, ">="));
-                    pos += 2;
-                } else {
-                    tokens.add(new Token(TokenType.GREATER_THAN, ">"));
-                    pos++;
-                }
-            } else if (currentChar == '<') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '=') {
-                    tokens.add(new Token(TokenType.LESS_THAN_OR_EQUAL, "<="));
-                    pos += 2;
-                } else {
-                    tokens.add(new Token(TokenType.LESS_THAN, "<"));
-                    pos++;
-                }
-            } else if (currentChar == '{') {
-                tokens.add(new Token(TokenType.LEFT_BRACE, "{"));
-                pos++;
-            } else if (currentChar == '}') {
-                tokens.add(new Token(TokenType.RIGHT_BRACE, "}"));
-                pos++;
-            } else if (currentChar == ';') {
-                tokens.add(new Token(TokenType.SEMICOLON, ";"));
-                pos++;
-            } else if (currentChar == ',') {
-                tokens.add(new Token(TokenType.COMMA, ","));
-                pos++;
-            } else if (currentChar == '&') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '&') {
-                    tokens.add(new Token(TokenType.AND, "&&"));
-                    pos += 2;
-                } else {
-                    throw new Exception("Invalid token: " + currentChar);
-                }
-            } else if (currentChar == '|') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '|') {
-                    tokens.add(new Token(TokenType.OR, "||"));
-                    pos += 2;
-                } else {
-                    throw new Exception("Invalid token: " + currentChar);
-                }
-            } else if (currentChar == '!') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '=') {
-                    tokens.add(new Token(TokenType.NOT_EQUALS, "!="));
-                    pos += 2;
-                } else {
-                    tokens.add(new Token(TokenType.NOT, "!"));
-                    pos++;
-                }
-            } else if (currentChar == ' ') {
-                pos++;
-            } else if (currentChar == '\t') {
-                pos++;
-            } else if (currentChar == '\n') {
-                tokens.add(new Token(TokenType.NEWLINE, "\n"));
-                pos++;
+                // tokenize identifiers and keywords
             } else {
-                throw new Exception("Invalid token: " + currentChar);
+                // tokenize operators and symbols
             }
         }
         return tokens;
@@ -177,31 +77,9 @@ public enum TokenType {
     IDENTIFIER,
     IF,
     ELSE,
-    WHILE,
-    FOR,
-    DO,
-    INT,
-    PLUS,
-    MINUS,
-    MULTIPLY,
-    DIVIDE,
-    LEFT_PAREN,
-    RIGHT_PAREN,
-    EQUALS,
-    GREATER_THAN,
-    GREATER_THAN_OR_EQUAL,
-    LESS_THAN,
-    LESS_THAN_OR_EQUAL,
-    NOT_EQUALS,
-    ASSIGNMENT,
-    LEFT_BRACE,
-    RIGHT_BRACE,
-    SEMICOLON,
-    COMMA,
-    AND,
-    OR,
-    NOT,
-    NEWLINE,
+    ...
+    ...
+    ...
     END_OF_FILE
 }
 
