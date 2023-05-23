@@ -2,9 +2,17 @@ package Lexer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class Lexer {
+
     private final String input;
     private int pos;
+
+    private static final Pattern INTEGER_PATTERN = Pattern.compile("\\d+");
+    private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z_][a-zA-Z0-9_]*");
+    private static final Pattern KEYWORD_PATTERN = Pattern.compile("IF|ELSE|if|else");
 
     public Lexer(String input) {
         this.input = input;
@@ -15,114 +23,141 @@ public class Lexer {
         List<Token> tokens = new ArrayList<>();
         while (pos < input.length()) {
             char currentChar = input.charAt(pos);
-            if (Character.isDigit(currentChar)) {
-                int initialPos = pos;
-                while (pos < input.length() && Character.isDigit(input.charAt(pos))) {
-                    pos++;
-                }
-                tokens.add(new Token(TokenType.INTEGER, input.substring(initialPos, pos)));
-            } else if (Character.isLetter(currentChar)) {
-                int startPos = pos;
-                while (pos < input.length() && (Character.isLetterOrDigit(input.charAt(pos)) || input.charAt(pos) == '_')) {
-                    pos++;
-                }
-                String identifier = input.substring(startPos, pos);
-                switch (identifier) {
-                    case "if" -> tokens.add(new Token(TokenType.IF, "if"));
-                    case "else" -> tokens.add(new Token(TokenType.ELSE, "else"));
-                    case "while" -> tokens.add(new Token(TokenType.WHILE, "while"));
-                    case "do" -> tokens.add(new Token(TokenType.DO, "do"));
-                    case "int" -> tokens.add(new Token(TokenType.INT, "int"));
-                    case "for" -> tokens.add(new Token(TokenType.FOR, "int"));
-                    default -> tokens.add(new Token(TokenType.IDENTIFIER, identifier));
-                }
-            } else if (currentChar == '+') {
-                tokens.add(new Token(TokenType.PLUS, "+"));
+            if (Character.isWhitespace(currentChar)) {
                 pos++;
-            } else if (currentChar == '-') {
-                tokens.add(new Token(TokenType.MINUS, "-"));
-                pos++;
-            } else if (currentChar == '*') {
-                tokens.add(new Token(TokenType.MULTIPLY, "*"));
-                pos++;
-            } else if (currentChar == '/') {
-                tokens.add(new Token(TokenType.DIVIDE, "/"));
-                pos++;
-            } else if (currentChar == '(') {
-                tokens.add(new Token(TokenType.LEFT_PAREN, "("));
-                pos++;
-            } else if (currentChar == ')') {
-                tokens.add(new Token(TokenType.RIGHT_PAREN, ")"));
-                pos++;
-            } else if (currentChar == '=') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '=') {
-                    tokens.add(new Token(TokenType.EQUALS, "=="));
-                    pos += 2;
-                } else {
-                    tokens.add(new Token(TokenType.ASSIGNMENT, "="));
-                    pos++;
-                }
-            } else if (currentChar == '>') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '=') {
-                    tokens.add(new Token(TokenType.GREATER_THAN_OR_EQUAL, ">="));
-                    pos += 2;
-                } else {
-                    tokens.add(new Token(TokenType.GREATER_THAN, ">"));
-                    pos++;
-                }
-            } else if (currentChar == '<') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '=') {
-                    tokens.add(new Token(TokenType.LESS_THAN_OR_EQUAL, "<="));
-                    pos += 2;
-                } else {
-                    tokens.add(new Token(TokenType.LESS_THAN, "<"));
-                    pos++;
-                }
-            } else if (currentChar == '{') {
-                tokens.add(new Token(TokenType.LEFT_BRACE, "{"));
-                pos++;
-            } else if (currentChar == '}') {
-                tokens.add(new Token(TokenType.RIGHT_BRACE, "}"));
-                pos++;
-            } else if (currentChar == ';') {
-                tokens.add(new Token(TokenType.SEMICOLON, ";"));
-                pos++;
-            } else if (currentChar == ',') {
-                tokens.add(new Token(TokenType.COMMA, ","));
-                pos++;
-            } else if (currentChar == '&') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '&') {
-                    tokens.add(new Token(TokenType.AND, "&&"));
-                    pos += 2;
-                } else {
-                    throw new Exception("Invalid token: " + currentChar);
-                }
-            } else if (currentChar == '|') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '|') {
+                continue;
+            }
+            String remainingInput = input.substring(pos);
+            Matcher integerMatcher = INTEGER_PATTERN.matcher(remainingInput);
+            Matcher identifierMatcher = IDENTIFIER_PATTERN.matcher(remainingInput);
+            Matcher keywordMatcher = KEYWORD_PATTERN.matcher(remainingInput);
+
+            if (currentChar == '|') {
+                if (peekNextChar() == '|') {
+                    consumeChar();
+                    consumeChar();
                     tokens.add(new Token(TokenType.OR, "||"));
-                    pos += 2;
+                    continue;
+                }
+                throw new Exception("Invalid token: " + currentChar);
+            } else if (currentChar == '&') {
+                if (peekNextChar() == '&') {
+                    consumeChar();
+                    consumeChar();
+                    tokens.add(new Token(TokenType.AND, "&&"));
+                    continue;
+                }
+                throw new Exception("Invalid token: " + currentChar);
+            } else if (currentChar == '!') {
+                if (peekNextChar() == '=') {
+                    consumeChar();
+                    consumeChar();
+                    tokens.add(new Token(TokenType.NOT_EQUAL, "!="));
+                    continue;
+                }
+                throw new Exception("Invalid token: " + currentChar);
+            } else if (currentChar == '>') {
+                if (peekNextChar() == '=') {
+                    consumeChar();
+                    consumeChar();
+                    tokens.add(new Token(TokenType.GREATER_OR_EQUAL, ">="));
+                    continue;
+                }
+                tokens.add(new Token(TokenType.GREATER_THAN, ">"));
+                pos++;
+                continue;
+            } else if (currentChar == '<') {
+                if (peekNextChar() == '=') {
+                    consumeChar();
+                    consumeChar();
+                    tokens.add(new Token(TokenType.LESS_OR_EQUAL, "<="));
+                    continue;
+                }
+                tokens.add(new Token(TokenType.LESS_THAN, "<"));
+                pos++;
+                continue;
+            } else if (currentChar == '=') {
+                if (peekNextChar() == '=') {
+                    consumeChar();
+                    consumeChar();
+                    tokens.add(new Token(TokenType.EQUALS, "=="));
+                    continue;
+                }
+                tokens.add(new Token(TokenType.ASSIGNMENT, "="));
+                pos++;
+                continue;
+            }
+
+            if (integerMatcher.lookingAt()) {
+                String integerMatch = integerMatcher.group();
+                tokens.add(new Token(TokenType.INTEGER, integerMatch));
+                pos += integerMatch.length();
+            } else if (identifierMatcher.lookingAt()) {
+                String identifierMatch = identifierMatcher.group();
+                TokenType tokenType;
+                if (keywordMatcher.lookingAt() && keywordMatcher.start() == 0) {
+                    tokenType = TokenType.valueOf(identifierMatch.toUpperCase());
                 } else {
+                    tokenType = TokenType.IDENTIFIER;
+                }
+                tokens.add(new Token(tokenType, identifierMatch));
+                pos += identifierMatch.length();
+            } else {
+                TokenType tokenType = getTokenTypeForCharacter(currentChar);
+                if (tokenType == null) {
                     throw new Exception("Invalid token: " + currentChar);
                 }
-            } else if (currentChar == '!') {
-                if (pos + 1 < input.length() && input.charAt(pos + 1) == '=') {
-                    tokens.add(new Token(TokenType.NOT_EQUALS, "!="));
-                    pos += 2;
-                } else {
-                    tokens.add(new Token(TokenType.NOT, "!"));
-                    pos++;
-                }
-            } else if (currentChar == ' ') {
+                String value = Character.toString(currentChar);
+                tokens.add(new Token(tokenType, value));
                 pos++;
-            } else if (currentChar == '\t') {
-                pos++;
-            } else if (currentChar == '\n') {
-                tokens.add(new Token(TokenType.NEWLINE, "\n"));
-                pos++;
-            } else {
-                throw new Exception("Invalid token: " + currentChar);
             }
         }
+        tokens.add(new Token(TokenType.END_OF_FILE, ""));
         return tokens;
+    }
+
+    private TokenType getTokenTypeForCharacter(char currentChar) {
+        switch (currentChar) {
+            case '+' -> {
+                return TokenType.PLUS;
+            }
+            case '-' -> {
+                return TokenType.MINUS;
+            }
+            case '*' -> {
+                return TokenType.MULTIPLY;
+            }
+            case '/' -> {
+                return TokenType.DIVIDE;
+            }
+            case '(' -> {
+                return TokenType.LEFT_PAREN;
+            }
+            case ')' -> {
+                return TokenType.RIGHT_PAREN;
+            }
+            case ';' -> {
+                return TokenType.SEMICOLON;
+            }
+            case '{' -> {
+                return TokenType.LEFT_BRACE;
+            }
+            case '}' -> {
+                return TokenType.RIGHT_BRACE;
+            }
+        }
+        return null;
+    }
+
+
+    private char peekNextChar() {
+        if (pos + 1 < input.length()) {
+            return input.charAt(pos + 1);
+        }
+        return '\0';
+    }
+
+    private void consumeChar() {
+        pos++;
     }
 }

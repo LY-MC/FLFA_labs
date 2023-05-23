@@ -7,6 +7,8 @@ import Lexer.*;
 import FiniteAutomaton.*;
 import Grammar.*;
 import java.util.*;
+import AST.*;
+import Parser.*;
 
 public class Main {
     public Main() {
@@ -15,7 +17,6 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         // Initializing of a grammar
-
         Set<String> nonTerminals = new HashSet<>(Arrays.asList("S", "A", "B", "C", "D"));
         Set<String> terminals = new HashSet<>(Arrays.asList("a", "b"));
         List<ProductionRule> productionRules = new ArrayList();
@@ -31,7 +32,7 @@ public class Main {
         productionRules.add(new ProductionRule("C", Arrays.asList("B", "A")));
         Grammar grammar = new Grammar(nonTerminals, terminals, productionRules);
 
-        // For lab 4
+        //For lab 4
         System.out.println("Initial grammar:\n" + grammar);
 
         Grammar transformedGrammar = ChomskyNormalForm.eliminateEpsilonProductions(grammar);
@@ -49,20 +50,7 @@ public class Main {
         transformedGrammar = ChomskyNormalForm.convertToChomskyNormalForm(grammar);
         System.out.println("Grammar after conversation to Chomsky Normal Form:\n" +transformedGrammar);
 
-        // For lab 3
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.print("Enter input: ");
-        String input = scanner.nextLine();
-
-        Lexer lexer = new Lexer(input);
-        List<Token> tokens = lexer.tokenize();
-
-        for (Token token : tokens) {
-            System.out.println(token);
-        }
-
-        //For labs 1 & 2
+        // For labs 1 & 2
         System.out.print("Grammar type: ");
         System.out.println(grammar.classifyGrammar());
         System.out.println();
@@ -114,7 +102,6 @@ public class Main {
 
         String initialState = "q0";
 
-
         FiniteAutomaton nfa = new FiniteAutomaton(states, symbols, transitionFunction, finalStates, initialState);
         System.out.println(nfa.toGrammar());
         if (nfa.isDeterministic()) {
@@ -128,5 +115,22 @@ public class Main {
         FiniteAutomaton dfa = NDFAToDFAConverter.convertToDFA(nfa);
         System.out.println(dfa);
 
+        //For labs 3 & 5
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Enter input: ");
+        String input = scanner.nextLine();
+
+        try {
+            Lexer lexer = new Lexer(input);
+            List<Token> tokens = lexer.tokenize();
+            System.out.println('\n' + "Tokens: " + tokens + '\n');
+
+            Parser parser = new Parser(tokens);
+            ASTNode ast = parser.parse();
+            System.out.println("AST: " + ast);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 }
